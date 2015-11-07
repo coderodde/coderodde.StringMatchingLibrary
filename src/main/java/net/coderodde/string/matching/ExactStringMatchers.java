@@ -12,27 +12,67 @@ import java.util.TreeSet;
  * @author Rodion "rodde" Efremov
  * @version 1.6 (Nov 7, 2015)
  */
-public final class StringMatchers {
+public final class ExactStringMatchers {
 
-    public static final int NOT_FOUND_INDEX = -1;
+    /**
+     * Returns an exact string matcher implementation based on the 
+     * <a href="https://en.wikipedia.org/wiki/Knuth%E2%80%93Morris%E2%80%93Pratt_algorithm">
+     * Knuth-Morris-Pratt algorithm</a>, that runs in time {@code O(n + m)}, 
+     * where {@code n} is the length of the string to search in, and {@code m} 
+     * is the length of the pattern. The space complexity is {@code m} for 
+     * holding a so-called "failure function".
+     * 
+     * @return an exact string matcher.
+     */
+    public static ExactStringMatcher knuthMorrisPrattMatcher() {
+        return new KnuthMorrisPrattMatcher();
+    }
+    
+    /**
+     * Returns an exact string matcher implementation based on 
+     * <a href="http://www.geeksforgeeks.org/pattern-searching-set-5-efficient-constructtion-of-finite-automata/">
+     * finite automata</a>. Runs in time {@code O(n + ms)}, where {@code n} is
+     * the length of the range to search, {@code m} is the length of the pattern
+     * to search for, and {@code s} is the number of distinct characters in the
+     * pattern. The space complexity is {@code O(ms)}.
+     * 
+     * @return an exact string matcher.
+     */
+    public static ExactStringMatcher finiteAutomatonMatcher() {
+        return new FiniteAutomatonMatcher();
+    }
+    
+    /**
+     * Returns an exact string matcher implementation based on the
+     * <a href="https://en.wikipedia.org/wiki/Rabin%E2%80%93Karp_algorithm">
+     * Rabin-Karp algorithm</a>. Worst case running time is {@code O(nm)}, where 
+     * {@code n} is the length of the range to search in, and {@code m} is the 
+     * length of the pattern to search for. The space complexity is constant.
+     * 
+     * @return an exact string matcher.
+     */
+    public static ExactStringMatcher rabinKarpMatcher() {
+        return new RabinKarpMatcher();
+    }
+    
+    /**
+     * Returns an exact string matcher implementation based on the 
+     * <a href="http://www.geeksforgeeks.org/z-algorithm-linear-time-pattern-searching-algorithm/">
+     * Z-algorithm</a>. Runs in time {@code O(n + m)}, where {@code n} is the 
+     * length of the range to search in and {@code m} is the length of the 
+     * pattern to search for. Space complexity is {@code O(n + m)}.
+     * 
+     * @return an exact string matcher. 
+     */
+    public static ExactStringMatcher zMatcher() {
+        return new ZMatcher();
+    }
+    
+    private static final class KnuthMorrisPrattMatcher 
+    implements ExactStringMatcher {
 
-    public static final class KnuthMorrisPrattMatcher {
-
-        /**
-         * This static method implements the 
-         * <a href="https://en.wikipedia.org/wiki/Knuth%E2%80%93Morris%E2%80%93Pratt_algorithm">
-         * Knuth-Morris-Pratt</a> pattern matching algorithm that runs in time
-         * {@code O(n + m)}, where {@code n} is the length of the text to search
-         * and {@code m} is the length of the pattern to search.
-         * 
-         * @param text       the text to search in.
-         * @param pattern    the pattern to search for.
-         * @param startIndex the character index from which to start matching.
-         * @return the smallest index no less than {@code startIndex} of the
-         *         position where the pattern occurs if there is a match, or
-         *         {@code NOT_FOUND_INDEX} if there is no match.
-         */
-        public static int match(String text, String pattern, int startIndex) {
+        @Override
+        public int match(String text, String pattern, int startIndex) {
             if (pattern.isEmpty()) {
                 return 0;
             }
@@ -63,11 +103,7 @@ public final class StringMatchers {
 
             return NOT_FOUND_INDEX;
         }
-
-        public static int match(String text, String pattern) {
-            return match(text, pattern, 0);
-        }
-
+        
         private static int[] computePrefixFunction(String pattern) {
             int m = pattern.length();
             int[] prefixFunction = new int[m];
@@ -89,23 +125,11 @@ public final class StringMatchers {
         }
     }
 
-    public static final class AutomatonMatcher {
+    private static final class FiniteAutomatonMatcher 
+    implements ExactStringMatcher {
 
-        /**
-         * This static method implements the algorithm for exact string matching
-         * that constructs a finite automaton, and uses it in order to detect
-         * a pattern. The running time is {@code n + sm}, where {@code n} is the
-         * length of the text to search, {@code m} is the length of the pattern,
-         * and {@code s} is the amount of distinct characters in the pattern.
-         * 
-         * @param text       the text to search in.
-         * @param pattern    the pattern to search for.
-         * @param startIndex the character index from which to start matching.
-         * @return the smallest index no less than {@code startIndex} of the
-         *         position where the pattern occurs if there is a match, or
-         *         {@code NOT_FOUND_INDEX} if there is no match.
-         */
-        public static int match(String text, String pattern, int startIndex) {
+        @Override
+        public int match(String text, String pattern, int startIndex) {
             if (pattern.isEmpty()) {
                 return 0;
             }
@@ -136,11 +160,8 @@ public final class StringMatchers {
 
             return NOT_FOUND_INDEX;
         }
-
-        public static int match(String text, String pattern) {
-            return match(text, pattern, 0);
-        }
-
+        
+        
         private static TransitionFunction 
         computeTransitionFunction(String pattern) {
             return new TransitionFunction(pattern);
@@ -211,22 +232,11 @@ public final class StringMatchers {
             }
         }
     }
+    
+    private static final class RabinKarpMatcher implements ExactStringMatcher {
 
-    public static final class RabinKarpMatcher {
-        /**
-         * This static method implements the Rabin-Karp algorithm for exact 
-         * string matching: The worst case running time is {@code nm}, where 
-         * {@code n} is the length of the text to search and {@code m} is the 
-         * length of the pattern.
-         * 
-         * @param text       the text to search in.
-         * @param pattern    the pattern to search for.
-         * @param startIndex the character index from which to start matching.
-         * @return the smallest index no less than {@code startIndex} of the
-         *         position where the pattern occurs if there is a match, or
-         *         {@code NOT_FOUND_INDEX} if there is no match.
-         */
-        public static int match(String text, String pattern, int startIndex) {
+        @Override
+        public int match(String text, String pattern, int startIndex) {
             int m = pattern.length();
 
             if (m == 0) {
@@ -281,7 +291,7 @@ public final class StringMatchers {
 
             return NOT_FOUND_INDEX;
         }
-
+        
         private static boolean hasMatch(String pattern, 
                                         String text, 
                                         int shift) {
@@ -305,28 +315,13 @@ public final class StringMatchers {
 
             return ret;
         }
-
-        public static int match(String text, String pattern) {
-            return match(text, pattern, 0);
-        }
     }
+    
 
-    public static final class ZMatcher {
+    private static final class ZMatcher implements ExactStringMatcher {
 
-        /**
-         * This static method implements the Z-algorithm for exact string 
-         * matching. The running time is {@code n + m}, where {@code n} is the
-         * length of the text to search and {@code m} is the length of the 
-         * pattern. The space complexity is linear.
-         * 
-         * @param text       the text to search in.
-         * @param pattern    the pattern to search for.
-         * @param startIndex the character index from which to start matching.
-         * @return the smallest index no less than {@code startIndex} of the
-         *         position where the pattern occurs if there is a match, or
-         *         {@code NOT_FOUND_INDEX} if there is no match.
-         */
-        public static int match(String text, String pattern, int startIndex) {
+        @Override
+        public int match(String text, String pattern, int startIndex) {
             if (pattern.isEmpty()) {
                 return 0;
             }
@@ -361,11 +356,7 @@ public final class StringMatchers {
 
             return NOT_FOUND_INDEX;
         }
-
-        public static int match(String text, String pattern) {
-            return match(text, pattern, 0);
-        }
-
+        
         private static int[] computeZArray(StringBuilder sb) {
             int n = sb.length();
             int[] ret = new int[n];

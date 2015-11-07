@@ -1,7 +1,6 @@
-
 import java.util.Random;
-import java.util.function.BiFunction;
-import net.coderodde.string.matching.StringMatchers;
+import net.coderodde.string.matching.ExactStringMatcher;
+import net.coderodde.string.matching.ExactStringMatchers;
 
 public class PerformanceDemo {
 
@@ -40,35 +39,30 @@ public class PerformanceDemo {
     }
 
     private static String getRandomText(Random random) {
-        int n = 10_000_000;
-        StringBuilder sb = new StringBuilder(n);
-
-        for (int i = 0; i < n; ++i) {
-            sb.append('a' + random.nextInt(26));
-        }
-
-        return sb.toString();
+        return getRandomString(10_000_000, random);
     }
 
     private static String getRandomPattern(Random random) {
-        int n = 1_000;
-        StringBuilder sb = new StringBuilder(n);
+        return getRandomString(200, random);
+    }
 
-        for (int i = 0; i < n; ++i) {
+    private static String getRandomString(int size, Random random) {
+        StringBuilder sb = new StringBuilder(size);
+
+        for (int i = 0; i < size; ++i) {
             sb.append('a' + random.nextInt(26));
         }
 
         return sb.toString();
     }
-
-    private static void profile(BiFunction<String, String, Integer> matcher,
-            String text,
-            String pattern,
-            int expectedIndex,
-            String matcherName) {
-        long startTime = System.currentTimeMillis();
-        int index = matcher.apply(text, pattern);
-        long endTime = System.currentTimeMillis();
+    
+    private static void profile(ExactStringMatcher matcher,
+                                String text,
+                                String pattern,
+                                int expectedIndex) {
+        long startTime = System.nanoTime();
+        int index = matcher.match(text, pattern);
+        long endTime = System.nanoTime();
 
         if (index != expectedIndex) {
             throw new IllegalStateException(
@@ -76,40 +70,37 @@ public class PerformanceDemo {
                     + ", expected: " + expectedIndex);
         }
 
-        System.out.println(matcherName + " in "
-                + (endTime - startTime) + " milliseconds.");
+        System.out.printf("%s in %.3f milliseconds.\n", 
+                          matcher.getClass().getSimpleName(),
+                          (endTime - startTime) / 1e6);
     }
 
     private static void demo(String text, String pattern) {
-        long startTime = System.currentTimeMillis();
+        long startTime = System.nanoTime();
         int expectedIndex = text.indexOf(pattern);
-        long endTime = System.currentTimeMillis();
+        long endTime = System.nanoTime();
 
-        System.out.println("String.indexOf in " + (endTime - startTime)
-                + " milliseconds.");
+        System.out.printf("String.indexOf in %.3f millisecons.\n", 
+                          (endTime - startTime) / 1e6);
 
-        profile(StringMatchers.KnuthMorrisPrattMatcher::match,
+        profile(ExactStringMatchers.knuthMorrisPrattMatcher(),
                 text,
                 pattern,
-                expectedIndex,
-                "Knuth-Morris-Pratt matcher");
+                expectedIndex);
 
-        profile(StringMatchers.AutomatonMatcher::match,
+        profile(ExactStringMatchers.finiteAutomatonMatcher(),
                 text,
                 pattern,
-                expectedIndex,
-                "Finite automaton matcher");
+                expectedIndex);
 
-        profile(StringMatchers.RabinKarpMatcher::match,
+        profile(ExactStringMatchers.rabinKarpMatcher(),
                 text,
                 pattern,
-                expectedIndex,
-                "Rabin-Karp matcher");
+                expectedIndex);
 
-        profile(StringMatchers.ZMatcher::match,
+        profile(ExactStringMatchers.zMatcher(),
                 text,
                 pattern,
-                expectedIndex,
-                "Z matcher");
+                expectedIndex);
     }
 }
