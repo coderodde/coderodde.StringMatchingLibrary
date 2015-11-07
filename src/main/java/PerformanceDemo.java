@@ -35,6 +35,12 @@ public class PerformanceDemo {
                 pattern,
                 expectedIndex,
                 "Knuth-Morris-Pratt matcher");
+        
+        profile(StringMatchers.AutomatonMatcher::match,
+                text,
+                pattern,
+                expectedIndex,
+                "Finite automaton matcher");
     }
 
     private static void profile(BiFunction<String, String, Integer> matcher,

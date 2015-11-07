@@ -18,6 +18,20 @@ public final class StringMatchers {
     
     public static final class KnuthMorrisPrattMatcher {
 
+        /**
+         * This static method implements the 
+         * <a href="https://en.wikipedia.org/wiki/Knuth%E2%80%93Morris%E2%80%93Pratt_algorithm">
+         * Knuth-Morris-Pratt</a> pattern matching algorithm that runs in time
+         * {@code O(n + m)}, where {@code n} is the length of the text to search
+         * and {@code m} is the length of the pattern to search.
+         * 
+         * @param text       the text to search in.
+         * @param pattern    the pattern to search for.
+         * @param startIndex the character index from which to start matching.
+         * @return the smallest index no less than {@code startIndex} of the
+         *         position where the pattern occurs if there is a match, or
+         *         {@code NOT_FOUND_INDEX} if there is no match.
+         */
         public static int match(String text, String pattern, int startIndex) {
             if (pattern.isEmpty()) {
                 return 0;
@@ -47,7 +61,7 @@ public final class StringMatchers {
                 }
             }
 
-            return -1;
+            return NOT_FOUND_INDEX;
         }
 
         public static int match(String text, String pattern) {
@@ -77,6 +91,20 @@ public final class StringMatchers {
     
     public static final class AutomatonMatcher {
         
+        /**
+         * This static method implements the algorithm for exact string matching
+         * that constructs a finite automaton, and uses it in order to detect
+         * a pattern. The running time is {@code n + sm}, where {@code n} is the
+         * length of the text to search, {@code m} is the length of the pattern,
+         * and {@code s} is the amount of distinct characters in the pattern.
+         * 
+         * @param text       the text to search in.
+         * @param pattern    the pattern to search for.
+         * @param startIndex the character index from which to start matching.
+         * @return the smallest index no less than {@code startIndex} of the
+         *         position where the pattern occurs if there is a match, or
+         *         {@code NOT_FOUND_INDEX} if there is no match.
+         */
         public static int match(String text, String pattern, int startIndex) {
             if (pattern.isEmpty()) {
                 return 0;
@@ -86,7 +114,7 @@ public final class StringMatchers {
             Integer m = pattern.length();
             
             if (m > n) {
-                return -1;
+                return NOT_FOUND_INDEX;
             }
             
             TransitionFunction transitionFunction = 
@@ -158,9 +186,6 @@ public final class StringMatchers {
                         lps = function[lps].get(pattern.charAt(i));
                     }
                 }
-                
-                System.out.println("Transition function:");
-                System.out.println(this);
             }
             
             Integer getState(int currentState, char character) {
@@ -184,6 +209,95 @@ public final class StringMatchers {
                 
                 return sb.toString();
             }
+        }
+    }
+    
+    public static final class RabinKarpMatcher {
+        
+        public static int match(String text, String pattern, int startIndex) {
+            int m = pattern.length();
+            
+            if (m == 0) {
+                return 0;
+            }
+            
+            int n = text.length();
+            startIndex = Math.max(0, startIndex);
+            
+            if (m + startIndex > n) {
+                return NOT_FOUND_INDEX;
+            }
+            
+            Set<Character> alphabet = new HashSet<>();
+            
+            for (char c : pattern.toCharArray()) {
+                alphabet.add(c);
+            }
+            
+            int d = alphabet.size();
+            int q = 137;
+            int h = intpow(d, m - 1) % q;
+            
+            int p = 0;
+            int t = 0;
+            
+            int textShift = Math.max(0, startIndex);
+            
+            // Beginning of preprocessing.
+            for (int i = 0; i < m; ++i) {
+                p = (d * p + (int)(pattern.charAt(i))) % q;
+                t = (d * t + (int)(text.charAt(i + startIndex))) % q;
+            }
+            // End of preprocessing.
+            
+            // Beginning of matching.
+            for (int s = Math.max(0, startIndex); s <= n - m;  ++s) {
+                if (p == t) {
+                    if (hasMatch(pattern, text, s)) {
+                        return s;
+                    }
+                }
+                
+                if (s < n - m) {
+                    int save_t = t;
+                    t = (d * (save_t - (int)(text.charAt(s)) * h) + 
+                         (int)(text.charAt(s + m))) % q;
+                    
+                    if (t < 0) {
+                        t = (t + q);
+                    }
+                }
+            }
+            
+            return NOT_FOUND_INDEX;
+        }
+        
+        private static boolean hasMatch(String pattern, 
+                                        String text, 
+                                        int shift) {
+            int m = pattern.length();
+            
+            for (int i = 0; i < m; ++i) {
+                if (pattern.charAt(i) != text.charAt(i + shift)) {
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+        
+        private static int intpow(int base, int exponent) {
+            int ret = 1;
+            
+            for (int i = 0; i < exponent; ++i) {
+                ret *= base;
+            }
+            
+            return ret;
+        }
+        
+        public static int match(String text, String pattern) {
+            return match(text, pattern, 0);
         }
     }
 }
