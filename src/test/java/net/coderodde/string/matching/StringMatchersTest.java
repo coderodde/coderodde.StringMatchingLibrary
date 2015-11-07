@@ -90,4 +90,33 @@ public class StringMatchersTest {
         assertEquals(0, RabinKarpMatcher.match("aabaab", "aab", -2));
         assertEquals(6, RabinKarpMatcher.match("aaaaaaaab", "aab"));
     }
+
+    @Test
+    public void testZMatcher() {
+        assertEquals(0, ZMatcher.match("acacaga", "acacaga"));
+        assertEquals(-1, ZMatcher.match("aaa", "aaaa"));
+        assertEquals(0,  ZMatcher.match("aaaa", "aaaa"));
+        assertEquals(-1, ZMatcher.match("aaaa", "bb"));
+        assertEquals(1,  ZMatcher.match("abbb", "bb"));
+        assertEquals(2,  ZMatcher.match("abcc", "cc"));
+        
+        assertEquals(5, ZMatcher.match("aaaaaaab", "aab"));
+        assertEquals(4, ZMatcher.match("ababababaca", "ababaca"));
+        
+        assertTrue("".indexOf("") == ZMatcher.match("", ""));
+        assertTrue("".indexOf("a") == ZMatcher.match("", "a"));
+        assertTrue("a".indexOf("") == ZMatcher.match("a", ""));
+        assertTrue("hello".indexOf("ello", -2) == 
+                ZMatcher.match("hello", "ello", -2));
+        
+        assertEquals(-1, ZMatcher.match("aabaab", "aab", 5));
+        assertEquals(-1, ZMatcher.match("aabaab", "aab", 4));
+        assertEquals(3, ZMatcher.match("aabaab", "aab", 3));
+        assertEquals(3, ZMatcher.match("aabaab", "aab", 2));
+        assertEquals(3, ZMatcher.match("aabaab", "aab", 1));
+        assertEquals(0, ZMatcher.match("aabaab", "aab", 0));
+        assertEquals(0, ZMatcher.match("aabaab", "aab", -1));
+        assertEquals(0, ZMatcher.match("aabaab", "aab", -2));
+        assertEquals(6, ZMatcher.match("aaaaaaaab", "aab"));
+    }
 }

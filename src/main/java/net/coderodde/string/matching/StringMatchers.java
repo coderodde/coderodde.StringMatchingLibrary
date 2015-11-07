@@ -302,18 +302,35 @@ public final class StringMatchers {
     public static final class ZMatcher {
         
         public static int match(String text, String pattern, int startIndex) {
+            if (pattern.isEmpty()) {
+                return 0;
+            }
+
+            int n = text.length();
+            int m = pattern.length();
+
+            if (m > n) {
+                return -1;
+            }
+            
+            startIndex = Math.max(0, startIndex);
+            
+            if (startIndex != 0) {
+                text = text.substring(startIndex);
+            }
+                
             StringBuilder sb = new StringBuilder(text.length() + 
-                                                 pattern.length() + 1);
+                                                 pattern.length() + 1 -
+                                                 startIndex);
             
             sb.append(pattern).append(Character.valueOf('\0')).append(text);
             // Do not create a new string from the StringBuilder, but rather
             // use the builder to access the data.
             int[] zArray = computeZArray(sb);
-            int m = pattern.length();
             
             for (int i = Math.max(0, startIndex); i < zArray.length; ++i) {
                 if (zArray[i] == m) {
-                    return i - m - 1;
+                    return i - m - 1 + startIndex;
                 }
             }
             
