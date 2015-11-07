@@ -102,5 +102,10 @@ public class PerformanceDemo {
                 text,
                 pattern,
                 expectedIndex);
+        
+        profile(ExactStringMatchers.boyerMooreMatcher(),
+                text,
+                pattern,
+                expectedIndex);
     }
 }

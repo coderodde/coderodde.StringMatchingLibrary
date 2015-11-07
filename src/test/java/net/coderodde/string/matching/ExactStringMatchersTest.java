@@ -16,7 +16,8 @@ public class ExactStringMatchersTest {
                 new Object[]{ ExactStringMatchers.knuthMorrisPrattMatcher() },
                 new Object[]{ ExactStringMatchers.finiteAutomatonMatcher() },
                 new Object[]{ ExactStringMatchers.rabinKarpMatcher() },
-                new Object[]{ ExactStringMatchers.zMatcher() }
+                new Object[]{ ExactStringMatchers.zMatcher() },
+                new Object[]{ ExactStringMatchers.boyerMooreMatcher() }
         );
     }
     

@@ -68,6 +68,10 @@ public final class ExactStringMatchers {
         return new ZMatcher();
     }
     
+    public static ExactStringMatcher boyerMooreMatcher() {
+        return new BoyerMooreMatcher();
+    }
+    
     private static final class KnuthMorrisPrattMatcher 
     implements ExactStringMatcher {
 
@@ -394,6 +398,107 @@ public final class ExactStringMatchers {
             }
 
             return ret;
+        }
+    }
+    
+    private static final class BoyerMooreMatcher implements ExactStringMatcher {
+
+        @Override
+        public int match(String text, String pattern, int startIndex) {
+            if (pattern.isEmpty()) {
+                return 0;
+            }
+
+            int n = text.length();
+            int m = pattern.length();
+
+            if (m > n) {
+                return -1;
+            }
+
+            startIndex = Math.max(0, startIndex);
+            
+            Map<Character, Integer> charTable = createCharTable(pattern);
+            int offsetTable[] = createOffsetTable(pattern);
+            
+            for (int i = m - 1, j; i < n;) {
+                for (j = m - 1; pattern.charAt(j) == text.charAt(i); --i, --j) {
+                    if (j == 0) {
+                        return i;
+                    }
+                }
+                
+                i += Math.max(offsetTable[m - 1 - j], 
+                              charTable.getOrDefault(text.charAt(i), 1));
+            }
+            
+            return NOT_FOUND_INDEX;
+        } 
+        
+        private static Map<Character, Integer> createCharTable(String pattern) {
+            int m = pattern.length();
+            Map<Character, Integer> table = new HashMap<>(m);
+            Set<Character> alphabet = new HashSet<>();
+            
+            for (char c : pattern.toCharArray()) {
+                alphabet.add(c);
+            }
+            
+            for (Character c : alphabet) {
+                table.put(c, m);
+            }
+            
+            for (int i = 0; i < m - 1; ++i) {
+                table.put(pattern.charAt(i), m - 1 - i);
+            }
+            
+            return table;
+        }
+        
+        private static int[] createOffsetTable(String pattern) {
+            int m = pattern.length();
+            int[] table = new int[m];
+            int lastPrefixPosition = m;
+            
+            for (int i = m - 1; i >= 0; --i) {
+                if (isPrefix(pattern, i + 1)) {
+                    lastPrefixPosition = i + 1;
+                }
+                
+                table[m - 1 - i] = lastPrefixPosition - i - m - 1;
+            }
+            
+            for (int i = 0; i < m - 1; ++i) {
+                int suffixLength = suffixLength(pattern, i);
+                table[suffixLength] = m - 1 - i + suffixLength;
+            }
+            
+            return table;
+        }
+        
+        private static boolean isPrefix(String pattern, int p) {
+            int m = pattern.length();
+            
+            for (int i = p, j = 0; i < m; ++i, ++j) {
+                if (pattern.charAt(i) != pattern.charAt(j)) {
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+        
+        private static int suffixLength(String pattern, int p) {
+            int length = 0;
+            int m = pattern.length();
+            
+            for (int i = p, j = m - 1; 
+                    i >= 0 && pattern.charAt(i) == pattern.charAt(j); 
+                    --i, --j) {
+                ++length;
+            }
+            
+            return length;
         }
     }
 }
