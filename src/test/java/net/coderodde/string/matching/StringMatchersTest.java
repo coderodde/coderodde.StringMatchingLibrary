@@ -88,5 +88,6 @@ public class StringMatchersTest {
         assertEquals(0, RabinKarpMatcher.match("aabaab", "aab", 0));
         assertEquals(0, RabinKarpMatcher.match("aabaab", "aab", -1));
         assertEquals(0, RabinKarpMatcher.match("aabaab", "aab", -2));
+        assertEquals(6, RabinKarpMatcher.match("aaaaaaaab", "aab"));
     }
 }

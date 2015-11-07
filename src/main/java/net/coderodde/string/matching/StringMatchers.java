@@ -234,24 +234,22 @@ public final class StringMatchers {
                 alphabet.add(c);
             }
             
-            int d = alphabet.size();
-            int q = 137;
-            int h = intpow(d, m - 1) % q;
+            long d = alphabet.size();
+            long q = 2;
+            long h = intpow(d, m - 1) % q;
             
-            int p = 0;
-            int t = 0;
-            
-            int textShift = Math.max(0, startIndex);
+            long p = 0;
+            long t = 0;
             
             // Beginning of preprocessing.
             for (int i = 0; i < m; ++i) {
-                p = (d * p + (int)(pattern.charAt(i))) % q;
-                t = (d * t + (int)(text.charAt(i + startIndex))) % q;
+                p = (d * p + (long)(pattern.charAt(i))) % q;
+                t = (d * t + (long)(text.charAt(i + startIndex))) % q;
             }
             // End of preprocessing.
             
             // Beginning of matching.
-            for (int s = Math.max(0, startIndex); s <= n - m;  ++s) {
+            for (int s = startIndex; s <= n - m;  ++s) {
                 if (p == t) {
                     if (hasMatch(pattern, text, s)) {
                         return s;
@@ -259,9 +257,9 @@ public final class StringMatchers {
                 }
                 
                 if (s < n - m) {
-                    int save_t = t;
-                    t = (d * (save_t - (int)(text.charAt(s)) * h) + 
-                         (int)(text.charAt(s + m))) % q;
+                    long save_t = t;
+                    t = (d * (save_t - (long)(text.charAt(s)) * h) + 
+                         (long)(text.charAt(s + m))) % q;
                     
                     if (t < 0) {
                         t = (t + q);
@@ -286,8 +284,8 @@ public final class StringMatchers {
             return true;
         }
         
-        private static int intpow(int base, int exponent) {
-            int ret = 1;
+        private static long intpow(long base, int exponent) {
+            long ret = 1;
             
             for (int i = 0; i < exponent; ++i) {
                 ret *= base;
@@ -298,6 +296,71 @@ public final class StringMatchers {
         
         public static int match(String text, String pattern) {
             return match(text, pattern, 0);
+        }
+    }
+    
+    public static final class ZMatcher {
+        
+        public static int match(String text, String pattern, int startIndex) {
+            StringBuilder sb = new StringBuilder(text.length() + 
+                                                 pattern.length() + 1);
+            
+            sb.append(pattern).append(Character.valueOf('\0')).append(text);
+            // Do not create a new string from the StringBuilder, but rather
+            // use the builder to access the data.
+            int[] zArray = computeZArray(sb);
+            int m = pattern.length();
+            
+            for (int i = Math.max(0, startIndex); i < zArray.length; ++i) {
+                if (zArray[i] == m) {
+                    return i - m - 1;
+                }
+            }
+            
+            return NOT_FOUND_INDEX;
+        }
+        
+        public static int match(String text, String pattern) {
+            return match(text, pattern, 0);
+        }
+        
+        private static int[] computeZArray(StringBuilder sb) {
+            int n = sb.length();
+            int[] ret = new int[n];
+            
+            int l = 0;
+            int r = 0;
+            
+            for (int i = 1; i < n; ++i) {
+                if (i > r) {
+                    l = i;
+                    r = i;
+                    
+                    while (r < n && sb.charAt(r - l) == sb.charAt(r)) {
+                        ++r;
+                    }
+                    
+                    ret[i] = r - l;
+                    --r;
+                } else {
+                    int k = i - l;
+                    
+                    if (ret[k] < r - i + 1) {
+                        ret[i] = ret[k];
+                    } else {
+                        l = i;
+                        
+                        while (r < n && sb.charAt(r - l) == sb.charAt(r)) {
+                            ++r;
+                        }
+                        
+                        ret[i] = r - l;
+                        --r;
+                    }
+                }
+            }
+            
+            return ret;
         }
     }
 }

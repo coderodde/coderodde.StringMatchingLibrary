@@ -41,6 +41,12 @@ public class PerformanceDemo {
                 pattern,
                 expectedIndex,
                 "Finite automaton matcher");
+        
+        profile(StringMatchers.RabinKarpMatcher::match,
+                text,
+                pattern,
+                expectedIndex,
+                "Rabin-Karp matcher");
     }
 
     private static void profile(BiFunction<String, String, Integer> matcher,
