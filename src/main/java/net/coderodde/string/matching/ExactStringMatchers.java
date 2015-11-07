@@ -421,15 +421,16 @@ public final class ExactStringMatchers {
             Map<Character, Integer> charTable = createCharTable(pattern);
             int offsetTable[] = createOffsetTable(pattern);
             
-            for (int i = m - 1, j; i < n;) {
+            for (int i = m - 1 + startIndex, j; i < n;) {
                 for (j = m - 1; pattern.charAt(j) == text.charAt(i); --i, --j) {
                     if (j == 0) {
                         return i;
                     }
                 }
                 
-                i += Math.max(offsetTable[m - 1 - j], 
-                              charTable.getOrDefault(text.charAt(i), 1));
+//                i += m - j; // Naive Boyer-Moore
+                i += Math.max(offsetTable[m - j - 1], 
+                              charTable.getOrDefault(text.charAt(i), m));
             }
             
             return NOT_FOUND_INDEX;
@@ -438,13 +439,8 @@ public final class ExactStringMatchers {
         private static Map<Character, Integer> createCharTable(String pattern) {
             int m = pattern.length();
             Map<Character, Integer> table = new HashMap<>(m);
-            Set<Character> alphabet = new HashSet<>();
             
             for (char c : pattern.toCharArray()) {
-                alphabet.add(c);
-            }
-            
-            for (Character c : alphabet) {
                 table.put(c, m);
             }
             
@@ -465,7 +461,7 @@ public final class ExactStringMatchers {
                     lastPrefixPosition = i + 1;
                 }
                 
-                table[m - 1 - i] = lastPrefixPosition - i - m - 1;
+                table[m - 1 - i] = lastPrefixPosition - i + m - 1;
             }
             
             for (int i = 0; i < m - 1; ++i) {

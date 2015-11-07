@@ -50,7 +50,7 @@ public class PerformanceDemo {
         StringBuilder sb = new StringBuilder(size);
 
         for (int i = 0; i < size; ++i) {
-            sb.append('a' + random.nextInt(26));
+            sb.append((char)('a' + random.nextInt(26)));
         }
 
         return sb.toString();
