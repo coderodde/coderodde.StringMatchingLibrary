@@ -6,36 +6,38 @@ public class PerformanceDemo {
 
     public static void main(final String... args) {
         int N = 5_000_000;
-        int M = 3000;
-        StringBuilder sb = new StringBuilder(N);
-
-        for (int i = 0; i < N; ++i) {
-            sb.append('a');
-        }
-
-        String text = sb.append('b').toString();
-
-        sb.delete(0, sb.length());
-
-        for (int i = 0; i < M; ++i) {
-            sb.append('a');
-        }
-
-        String pattern = sb.append('b').toString();
-
+        
+        String text = getWorstCaseText(N);
+        
         System.out.println("[WORST CASE OF String.indexOf]");
-        demo(text, pattern);
 
+        for (int i = 3000; i > 0; i -= 500) {
+            System.out.println();
+            System.out.println("[Pattern length: " + i + "]");
+            String pattern = getWorstCaseText(i);
+            demo(text, pattern);
+        }
+        
         long seed = System.currentTimeMillis();
         Random random = new Random(seed);
         text = getRandomText(random);
-        pattern = getRandomPattern(random);
+        String pattern = getRandomPattern(random);
 
         System.out.println();
         System.out.println("[RANDOM STRINGS]");
         System.out.println("[SEED: " + seed + "]");
 
         demo(text, pattern);
+    }
+    
+    private static String getWorstCaseText(int length) {
+        StringBuilder sb = new StringBuilder(length);
+        
+        for (int i = 0; i < length - 1; ++i) {
+            sb.append('a');
+        }
+        
+        return sb.append('b').toString();
     }
 
     private static String getRandomText(Random random) {
@@ -108,7 +110,7 @@ public class PerformanceDemo {
                 pattern,
                 expectedIndex);
         
-        System.out.println("Naive Boyer-Moore:");
+        System.out.print("Naïve ");
         profile(ExactStringMatchers.getNaiveBoyerMooreMatcher(),
                 text,
                 pattern,
