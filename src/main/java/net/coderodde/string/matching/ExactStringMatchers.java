@@ -24,7 +24,7 @@ public final class ExactStringMatchers {
      * 
      * @return an exact string matcher.
      */
-    public static ExactStringMatcher knuthMorrisPrattMatcher() {
+    public static ExactStringMatcher getKnuthMorrisPrattMatcher() {
         return new KnuthMorrisPrattMatcher();
     }
     
@@ -38,7 +38,7 @@ public final class ExactStringMatchers {
      * 
      * @return an exact string matcher.
      */
-    public static ExactStringMatcher finiteAutomatonMatcher() {
+    public static ExactStringMatcher getFiniteAutomatonMatcher() {
         return new FiniteAutomatonMatcher();
     }
     
@@ -51,7 +51,7 @@ public final class ExactStringMatchers {
      * 
      * @return an exact string matcher.
      */
-    public static ExactStringMatcher rabinKarpMatcher() {
+    public static ExactStringMatcher getRabinKarpMatcher() {
         return new RabinKarpMatcher();
     }
     
@@ -64,12 +64,36 @@ public final class ExactStringMatchers {
      * 
      * @return an exact string matcher. 
      */
-    public static ExactStringMatcher zMatcher() {
+    public static ExactStringMatcher getZMatcher() {
         return new ZMatcher();
     }
     
-    public static ExactStringMatcher boyerMooreMatcher() {
-        return new BoyerMooreMatcher();
+    /**
+     * Returns an exact string matcher implementation based on the 
+     * <a href="https://en.wikipedia.org/wiki/Boyer%E2%80%93Moore_string_search_algorithm">
+     * Boyer-Moore algorithm</a>. The worst case running time is {@code O(nm)}, 
+     * where {@code n} is the length of the text being searched in, and 
+     * {@code m} is the length of the pattern being searched for. However, this
+     * matcher runs fast in practice. Space complexity is {@code O(m)}.
+     * 
+     * @return an exact string matcher.
+     */
+    public static ExactStringMatcher getBoyerMooreMatcher() {
+        return new BoyerMooreMatcher(false);
+    }
+    
+    /**
+     * Returns an exact string matcher implementation based on the <b>naïve</b>
+     * <a href="https://en.wikipedia.org/wiki/Boyer%E2%80%93Moore_string_search_algorithm">
+     * Boyer-Moore algorithm</a>. The worst case running time is {@code O(nm)}, 
+     * where {@code n} is the length of the text being searched in, and 
+     * {@code m} is the length of the pattern being searched for. However, this
+     * matcher runs fast in practice. Space complexity is {@code O(m)}.
+     * 
+     * @return an exact string matcher.
+     */
+    public static ExactStringMatcher getNaiveBoyerMooreMatcher() {
+        return new BoyerMooreMatcher(true);
     }
     
     private static final class KnuthMorrisPrattMatcher 
@@ -403,6 +427,12 @@ public final class ExactStringMatchers {
     
     private static final class BoyerMooreMatcher implements ExactStringMatcher {
 
+        private final boolean naive;
+        
+        BoyerMooreMatcher(boolean naive) {
+            this.naive = naive;
+        }
+        
         @Override
         public int match(String text, String pattern, int startIndex) {
             if (pattern.isEmpty()) {
@@ -418,6 +448,17 @@ public final class ExactStringMatchers {
 
             startIndex = Math.max(0, startIndex);
             
+            if (naive) {
+                return matchNaiveImpl(text, pattern, startIndex);
+            } else {
+                return matchImpl(text, pattern, startIndex);
+            }
+        } 
+        
+        private int matchImpl(String text, String pattern, int startIndex) {
+            int n = text.length();
+            int m = pattern.length();
+            
             Map<Character, Integer> charTable = createCharTable(pattern);
             int offsetTable[] = createOffsetTable(pattern);
             
@@ -428,13 +469,31 @@ public final class ExactStringMatchers {
                     }
                 }
                 
-//                i += m - j; // Naive Boyer-Moore
                 i += Math.max(offsetTable[m - j - 1], 
                               charTable.getOrDefault(text.charAt(i), m));
             }
             
             return NOT_FOUND_INDEX;
-        } 
+        }
+        
+        private int matchNaiveImpl(String text, 
+                                   String pattern, 
+                                   int startIndex) {
+            int n = text.length();
+            int m = pattern.length();
+            
+            for (int i = m - 1 + startIndex, j; i < n;) {
+                for (j = m - 1; pattern.charAt(j) == text.charAt(i); --i, --j) {
+                    if (j == 0) {
+                        return i;
+                    }
+                }
+                
+                i += m - j; 
+            }
+            
+            return NOT_FOUND_INDEX;
+        }
         
         private static Map<Character, Integer> createCharTable(String pattern) {
             int m = pattern.length();

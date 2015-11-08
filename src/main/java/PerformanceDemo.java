@@ -5,7 +5,7 @@ import net.coderodde.string.matching.ExactStringMatchers;
 public class PerformanceDemo {
 
     public static void main(final String... args) {
-        int N = 3_000_000;
+        int N = 5_000_000;
         int M = 3000;
         StringBuilder sb = new StringBuilder(N);
 
@@ -83,27 +83,33 @@ public class PerformanceDemo {
         System.out.printf("String.indexOf in %.3f millisecons.\n", 
                           (endTime - startTime) / 1e6);
 
-        profile(ExactStringMatchers.knuthMorrisPrattMatcher(),
+        profile(ExactStringMatchers.getKnuthMorrisPrattMatcher(),
                 text,
                 pattern,
                 expectedIndex);
 
-        profile(ExactStringMatchers.finiteAutomatonMatcher(),
+        profile(ExactStringMatchers.getFiniteAutomatonMatcher(),
                 text,
                 pattern,
                 expectedIndex);
 
-        profile(ExactStringMatchers.rabinKarpMatcher(),
+        profile(ExactStringMatchers.getRabinKarpMatcher(),
                 text,
                 pattern,
                 expectedIndex);
 
-        profile(ExactStringMatchers.zMatcher(),
+        profile(ExactStringMatchers.getZMatcher(),
                 text,
                 pattern,
                 expectedIndex);
         
-        profile(ExactStringMatchers.boyerMooreMatcher(),
+        profile(ExactStringMatchers.getBoyerMooreMatcher(),
+                text,
+                pattern,
+                expectedIndex);
+        
+        System.out.println("Naive Boyer-Moore:");
+        profile(ExactStringMatchers.getNaiveBoyerMooreMatcher(),
                 text,
                 pattern,
                 expectedIndex);
