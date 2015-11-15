@@ -7,12 +7,12 @@ package net.coderodde.string.matching;
  * @version 1.6 (Nov 7, 2015)
  */
 public interface ExactStringMatcher {
-    
+
     /**
      * The index returned whenever there is no match.
      */
-    public int NOT_FOUND_INDEX = -1;
-    
+    public static final int NOT_FOUND_INDEX = -1;
+
     /**
      * Attempts to find an occurrence of {@code pattern} in the {@code text} 
      * omitting first {@code startIndex} characters from {@code text}.
@@ -26,7 +26,7 @@ public interface ExactStringMatcher {
      *         {@code NOT_FOUND_INDEX} if there is no match.
      */
     public int match(String text, String pattern, int startIndex);
-    
+
     /**
      * Attempts to find an occurrence of {@code pattern} in the {@code text} 
      * searching in the entire string {@code text}.

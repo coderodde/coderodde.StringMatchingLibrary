@@ -27,7 +27,7 @@ public final class ExactStringMatchers {
     public static ExactStringMatcher getKnuthMorrisPrattMatcher() {
         return new KnuthMorrisPrattMatcher();
     }
-    
+
     /**
      * Returns an exact string matcher implementation based on 
      * <a href="http://www.geeksforgeeks.org/pattern-searching-set-5-efficient-constructtion-of-finite-automata/">
@@ -41,7 +41,7 @@ public final class ExactStringMatchers {
     public static ExactStringMatcher getFiniteAutomatonMatcher() {
         return new FiniteAutomatonMatcher();
     }
-    
+
     /**
      * Returns an exact string matcher implementation based on the
      * <a href="https://en.wikipedia.org/wiki/Rabin%E2%80%93Karp_algorithm">
@@ -54,7 +54,7 @@ public final class ExactStringMatchers {
     public static ExactStringMatcher getRabinKarpMatcher() {
         return new RabinKarpMatcher();
     }
-    
+
     /**
      * Returns an exact string matcher implementation based on the 
      * <a href="http://www.geeksforgeeks.org/z-algorithm-linear-time-pattern-searching-algorithm/">
@@ -67,7 +67,7 @@ public final class ExactStringMatchers {
     public static ExactStringMatcher getZMatcher() {
         return new ZMatcher();
     }
-    
+
     /**
      * Returns an exact string matcher implementation based on the 
      * <a href="https://en.wikipedia.org/wiki/Boyer%E2%80%93Moore_string_search_algorithm">
@@ -81,7 +81,7 @@ public final class ExactStringMatchers {
     public static ExactStringMatcher getBoyerMooreMatcher() {
         return new BoyerMooreMatcher(false);
     }
-    
+
     /**
      * Returns an exact string matcher implementation based on the <b>naïve</b>
      * <a href="https://en.wikipedia.org/wiki/Boyer%E2%80%93Moore_string_search_algorithm">
@@ -95,14 +95,16 @@ public final class ExactStringMatchers {
     public static ExactStringMatcher getNaiveBoyerMooreMatcher() {
         return new BoyerMooreMatcher(true);
     }
-    
+
     private static final class KnuthMorrisPrattMatcher 
     implements ExactStringMatcher {
 
         @Override
         public int match(String text, String pattern, int startIndex) {
+            startIndex = Math.max(0, startIndex);
+            
             if (pattern.isEmpty()) {
-                return 0;
+                return Math.min(startIndex, text.length());
             }
 
             int n = text.length();
@@ -131,7 +133,7 @@ public final class ExactStringMatchers {
 
             return NOT_FOUND_INDEX;
         }
-        
+
         private static int[] computePrefixFunction(String pattern) {
             int m = pattern.length();
             int[] prefixFunction = new int[m];
@@ -158,8 +160,10 @@ public final class ExactStringMatchers {
 
         @Override
         public int match(String text, String pattern, int startIndex) {
+            startIndex = Math.max(0, startIndex);
+            
             if (pattern.isEmpty()) {
-                return 0;
+                return Math.min(startIndex, text.length());
             }
 
             int n = text.length();
@@ -188,8 +192,8 @@ public final class ExactStringMatchers {
 
             return NOT_FOUND_INDEX;
         }
-        
-        
+
+
         private static TransitionFunction 
         computeTransitionFunction(String pattern) {
             return new TransitionFunction(pattern);
@@ -260,15 +264,17 @@ public final class ExactStringMatchers {
             }
         }
     }
-    
+
     private static final class RabinKarpMatcher implements ExactStringMatcher {
 
         @Override
         public int match(String text, String pattern, int startIndex) {
+            startIndex = Math.max(0, startIndex);
+            
             int m = pattern.length();
 
             if (m == 0) {
-                return 0;
+                return Math.min(startIndex, text.length());
             }
 
             int n = text.length();
@@ -319,7 +325,7 @@ public final class ExactStringMatchers {
 
             return NOT_FOUND_INDEX;
         }
-        
+
         private static boolean hasMatch(String pattern, 
                                         String text, 
                                         int shift) {
@@ -344,14 +350,15 @@ public final class ExactStringMatchers {
             return ret;
         }
     }
-    
 
     private static final class ZMatcher implements ExactStringMatcher {
 
         @Override
         public int match(String text, String pattern, int startIndex) {
+            startIndex = Math.max(0, startIndex);
+            
             if (pattern.isEmpty()) {
-                return 0;
+                return Math.min(startIndex, text.length());
             }
 
             int n = text.length();
@@ -384,7 +391,7 @@ public final class ExactStringMatchers {
 
             return NOT_FOUND_INDEX;
         }
-        
+
         private static int[] computeZArray(StringBuilder sb) {
             int n = sb.length();
             int[] ret = new int[n];
@@ -424,19 +431,21 @@ public final class ExactStringMatchers {
             return ret;
         }
     }
-    
+
     private static final class BoyerMooreMatcher implements ExactStringMatcher {
 
         private final boolean naive;
-        
+
         BoyerMooreMatcher(boolean naive) {
             this.naive = naive;
         }
-        
+
         @Override
         public int match(String text, String pattern, int startIndex) {
+            startIndex = Math.max(0, startIndex);
+            
             if (pattern.isEmpty()) {
-                return 0;
+                return Math.min(startIndex, text.length());
             }
 
             int n = text.length();
@@ -447,112 +456,112 @@ public final class ExactStringMatchers {
             }
 
             startIndex = Math.max(0, startIndex);
-            
+
             if (naive) {
                 return matchNaiveImpl(text, pattern, startIndex);
             } else {
                 return matchImpl(text, pattern, startIndex);
             }
         } 
-        
+
         private int matchImpl(String text, String pattern, int startIndex) {
             int n = text.length();
             int m = pattern.length();
-            
+
             Map<Character, Integer> charTable = createCharTable(pattern);
             int offsetTable[] = createOffsetTable(pattern);
-            
+
             for (int i = m - 1 + startIndex, j; i < n;) {
                 for (j = m - 1; pattern.charAt(j) == text.charAt(i); --i, --j) {
                     if (j == 0) {
                         return i;
                     }
                 }
-                
+
                 i += Math.max(offsetTable[m - j - 1], 
                               charTable.getOrDefault(text.charAt(i), m));
             }
-            
+
             return NOT_FOUND_INDEX;
         }
-        
+
         private int matchNaiveImpl(String text, 
                                    String pattern, 
                                    int startIndex) {
             int n = text.length();
             int m = pattern.length();
-            
+
             for (int i = m - 1 + startIndex, j; i < n;) {
                 for (j = m - 1; pattern.charAt(j) == text.charAt(i); --i, --j) {
                     if (j == 0) {
                         return i;
                     }
                 }
-                
+
                 i += m - j; 
             }
-            
+
             return NOT_FOUND_INDEX;
         }
-        
+
         private static Map<Character, Integer> createCharTable(String pattern) {
             int m = pattern.length();
             Map<Character, Integer> table = new HashMap<>(m);
-            
+
             for (char c : pattern.toCharArray()) {
                 table.put(c, m);
             }
-            
+
             for (int i = 0; i < m - 1; ++i) {
                 table.put(pattern.charAt(i), m - 1 - i);
             }
-            
+
             return table;
         }
-        
+
         private static int[] createOffsetTable(String pattern) {
             int m = pattern.length();
             int[] table = new int[m];
             int lastPrefixPosition = m;
-            
+
             for (int i = m - 1; i >= 0; --i) {
                 if (isPrefix(pattern, i + 1)) {
                     lastPrefixPosition = i + 1;
                 }
-                
+
                 table[m - 1 - i] = lastPrefixPosition - i + m - 1;
             }
-            
+
             for (int i = 0; i < m - 1; ++i) {
                 int suffixLength = suffixLength(pattern, i);
                 table[suffixLength] = m - 1 - i + suffixLength;
             }
-            
+
             return table;
         }
-        
+
         private static boolean isPrefix(String pattern, int p) {
             int m = pattern.length();
-            
+
             for (int i = p, j = 0; i < m; ++i, ++j) {
                 if (pattern.charAt(i) != pattern.charAt(j)) {
                     return false;
                 }
             }
-            
+
             return true;
         }
-        
+
         private static int suffixLength(String pattern, int p) {
             int length = 0;
             int m = pattern.length();
-            
+
             for (int i = p, j = m - 1; 
                     i >= 0 && pattern.charAt(i) == pattern.charAt(j); 
                     --i, --j) {
                 ++length;
             }
-            
+
             return length;
         }
     }

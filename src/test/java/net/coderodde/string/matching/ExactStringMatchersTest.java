@@ -21,13 +21,13 @@ public class ExactStringMatchersTest {
                 new Object[]{ ExactStringMatchers.getNaiveBoyerMooreMatcher() }
         );
     }
-    
+
     private final ExactStringMatcher matcher;
-    
+
     public ExactStringMatchersTest(ExactStringMatcher matcher) {
         this.matcher = matcher;
     }
-    
+
     @Test
     public void testMatcher() {
         assertEquals(0,  matcher.match("acacaga", "acacaga"));
@@ -55,5 +55,11 @@ public class ExactStringMatchersTest {
         assertEquals(0,  matcher.match("aabaab", "aab", -1));
         assertEquals(0,  matcher.match("aabaab", "aab", -2));
         assertEquals(6,  matcher.match("aaaaaaaab", "aab"));
+        
+        for (int i = -2; i <= 3; ++i) {
+            assertTrue("fun".indexOf("", i) == matcher.match("fun", "", i));
+        }
+        
+        assertTrue("fun".indexOf("", 4) == matcher.match("fun", "", 4));
     }
 }

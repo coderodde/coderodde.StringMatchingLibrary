@@ -5,10 +5,13 @@ import net.coderodde.string.matching.ExactStringMatchers;
 public class PerformanceDemo {
 
     public static void main(final String... args) {
+        ExactStringMatchers.getKnuthMorrisPrattMatcher().match("fdfdfsafjdklsfdss", "ananassana");
+        
+        System.exit(0);
         int N = 5_000_000;
-        
+
         String text = getWorstCaseText(N);
-        
+
         System.out.println("[WORST CASE OF String.indexOf]");
 
         for (int i = 3000; i > 0; i -= 500) {
@@ -17,7 +20,7 @@ public class PerformanceDemo {
             String pattern = getWorstCaseText(i);
             demo(text, pattern);
         }
-        
+
         long seed = System.currentTimeMillis();
         Random random = new Random(seed);
         text = getRandomText(random);
@@ -29,14 +32,14 @@ public class PerformanceDemo {
 
         demo(text, pattern);
     }
-    
+
     private static String getWorstCaseText(int length) {
         StringBuilder sb = new StringBuilder(length);
-        
+
         for (int i = 0; i < length - 1; ++i) {
             sb.append('a');
         }
-        
+
         return sb.append('b').toString();
     }
 
@@ -57,7 +60,7 @@ public class PerformanceDemo {
 
         return sb.toString();
     }
-    
+
     private static void profile(ExactStringMatcher matcher,
                                 String text,
                                 String pattern,
@@ -104,12 +107,12 @@ public class PerformanceDemo {
                 text,
                 pattern,
                 expectedIndex);
-        
+
         profile(ExactStringMatchers.getBoyerMooreMatcher(),
                 text,
                 pattern,
                 expectedIndex);
-        
+
         System.out.print("Naïve ");
         profile(ExactStringMatchers.getNaiveBoyerMooreMatcher(),
                 text,
