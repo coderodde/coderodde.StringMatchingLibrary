@@ -18,7 +18,8 @@ public class ExactStringMatchersTest {
                 new Object[]{ ExactStringMatchers.getRabinKarpMatcher() },
                 new Object[]{ ExactStringMatchers.getZMatcher() },
                 new Object[]{ ExactStringMatchers.getBoyerMooreMatcher() },
-                new Object[]{ ExactStringMatchers.getNaiveBoyerMooreMatcher() }
+                new Object[]{ ExactStringMatchers.getNaiveBoyerMooreMatcher() },
+                new Object[]{ ExactStringMatchers.getShiftOrMatcher()}
         );
     }
 

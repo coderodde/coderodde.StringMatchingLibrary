@@ -1,5 +1,6 @@
 package net.coderodde.string.matching;
 
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -81,7 +82,7 @@ public final class ExactStringMatchers {
     public static ExactStringMatcher getBoyerMooreMatcher() {
         return new BoyerMooreMatcher(false);
     }
-
+    
     /**
      * Returns an exact string matcher implementation based on the <b>naïve</b>
      * <a href="https://en.wikipedia.org/wiki/Boyer%E2%80%93Moore_string_search_algorithm">
@@ -94,6 +95,10 @@ public final class ExactStringMatchers {
      */
     public static ExactStringMatcher getNaiveBoyerMooreMatcher() {
         return new BoyerMooreMatcher(true);
+    }
+
+    public static ShiftAndStringMatcher getShiftOrMatcher() {
+        return new ShiftAndStringMatcher();
     }
 
     private static final class KnuthMorrisPrattMatcher 
@@ -563,6 +568,54 @@ public final class ExactStringMatchers {
             }
 
             return length;
+        }
+    }
+    
+    private static final class ShiftAndStringMatcher 
+    implements ExactStringMatcher {
+
+        @Override
+        public int match(String text, String pattern, int startIndex) {
+            startIndex = Math.max(0, startIndex);
+            
+            if (pattern.isEmpty()) {
+                return Math.min(startIndex, text.length());
+            }
+            
+            int n = text.length();
+            int m = pattern.length();
+            Map<Character, BigInteger> map = new HashMap<>();
+            
+            for (int i = 0; i < m; ++i) {
+                char c = pattern.charAt(i);
+                BigInteger current = map.get(c);
+                
+                if (current == null) {
+                    map.put(c, BigInteger.valueOf(2).pow(i));
+                } else {
+                    map.put(c, current.add(BigInteger.valueOf(2).pow(i)));
+                }
+            }
+            
+            BigInteger d = BigInteger.ZERO;
+            BigInteger f = BigInteger.valueOf(2).pow(m - 1);
+            
+            for (int j = startIndex; j < n; ++j) {
+                char c = text.charAt(j);
+                d = d.shiftLeft(1).or(BigInteger.ONE);
+                
+                if (map.containsKey(c)) {
+                    d = d.and(map.get(c));
+                } else {
+                    d = BigInteger.ZERO;
+                }
+                
+                if (!d.and(f).equals(BigInteger.ZERO)) {
+                    return j - m + 1;
+                }
+            }
+            
+            return NOT_FOUND_INDEX;
         }
     }
 }

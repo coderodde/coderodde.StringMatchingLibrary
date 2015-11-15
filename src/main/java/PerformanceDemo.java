@@ -4,10 +4,7 @@ import net.coderodde.string.matching.ExactStringMatchers;
 
 public class PerformanceDemo {
 
-    public static void main(final String... args) {
-        ExactStringMatchers.getKnuthMorrisPrattMatcher().match("fdfdfsafjdklsfdss", "ananassana");
-        
-        System.exit(0);
+    public static void main(String[] args) {
         int N = 5_000_000;
 
         String text = getWorstCaseText(N);
@@ -115,6 +112,11 @@ public class PerformanceDemo {
 
         System.out.print("Naïve ");
         profile(ExactStringMatchers.getNaiveBoyerMooreMatcher(),
+                text,
+                pattern,
+                expectedIndex);
+        
+        profile(ExactStringMatchers.getShiftOrMatcher(),
                 text,
                 pattern,
                 expectedIndex);
