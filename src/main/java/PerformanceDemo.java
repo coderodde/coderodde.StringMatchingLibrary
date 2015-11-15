@@ -116,7 +116,7 @@ public class PerformanceDemo {
                 pattern,
                 expectedIndex);
         
-        profile(ExactStringMatchers.getShiftOrMatcher(),
+        profile(ExactStringMatchers.getHorspoolMatcher(),
                 text,
                 pattern,
                 expectedIndex);

@@ -13,13 +13,13 @@ public class ExactStringMatchersTest {
     @Parameterized.Parameters
     public static List<Object[]> getParameters() {
         return Arrays.asList(
-                new Object[]{ ExactStringMatchers.getKnuthMorrisPrattMatcher() },
-                new Object[]{ ExactStringMatchers.getFiniteAutomatonMatcher() },
-                new Object[]{ ExactStringMatchers.getRabinKarpMatcher() },
-                new Object[]{ ExactStringMatchers.getZMatcher() },
-                new Object[]{ ExactStringMatchers.getBoyerMooreMatcher() },
-                new Object[]{ ExactStringMatchers.getNaiveBoyerMooreMatcher() },
-                new Object[]{ ExactStringMatchers.getShiftOrMatcher()}
+            new Object[]{ ExactStringMatchers.getKnuthMorrisPrattMatcher() },
+            new Object[]{ ExactStringMatchers.getFiniteAutomatonMatcher()  },
+            new Object[]{ ExactStringMatchers.getRabinKarpMatcher()        },
+            new Object[]{ ExactStringMatchers.getZMatcher()                },
+            new Object[]{ ExactStringMatchers.getBoyerMooreMatcher()       },
+            new Object[]{ ExactStringMatchers.getNaiveBoyerMooreMatcher()  },
+            new Object[]{ ExactStringMatchers.getHorspoolMatcher()         }
         );
     }
 

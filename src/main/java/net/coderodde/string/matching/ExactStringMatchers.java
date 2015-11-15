@@ -97,10 +97,10 @@ public final class ExactStringMatchers {
         return new BoyerMooreMatcher(true);
     }
 
-    public static ShiftAndStringMatcher getShiftOrMatcher() {
-        return new ShiftAndStringMatcher();
+    public static ExactStringMatcher getHorspoolMatcher() {
+        return new HorspoolMatcher();
     }
-
+    
     private static final class KnuthMorrisPrattMatcher 
     implements ExactStringMatcher {
 
@@ -571,8 +571,7 @@ public final class ExactStringMatchers {
         }
     }
     
-    private static final class ShiftAndStringMatcher 
-    implements ExactStringMatcher {
+    private static final class HorspoolMatcher implements ExactStringMatcher {
 
         @Override
         public int match(String text, String pattern, int startIndex) {
@@ -584,35 +583,30 @@ public final class ExactStringMatchers {
             
             int n = text.length();
             int m = pattern.length();
-            Map<Character, BigInteger> map = new HashMap<>();
             
-            for (int i = 0; i < m; ++i) {
-                char c = pattern.charAt(i);
-                BigInteger current = map.get(c);
-                
-                if (current == null) {
-                    map.put(c, BigInteger.valueOf(2).pow(i));
-                } else {
-                    map.put(c, current.add(BigInteger.valueOf(2).pow(i)));
-                }
+            Map<Character, Integer> shiftMap = new HashMap<>(m);
+            
+            for (int i = 0; i < m - 1; ++i) {
+                shiftMap.put(pattern.charAt(i), m - 1 - i);
             }
             
-            BigInteger d = BigInteger.ZERO;
-            BigInteger f = BigInteger.valueOf(2).pow(m - 1);
+            int j = startIndex;
             
-            for (int j = startIndex; j < n; ++j) {
-                char c = text.charAt(j);
-                d = d.shiftLeft(1).or(BigInteger.ONE);
-                
-                if (map.containsKey(c)) {
-                    d = d.and(map.get(c));
-                } else {
-                    d = BigInteger.ZERO;
+            while (j + m <= n) {
+                if (pattern.charAt(m - 1) == text.charAt(j + m - 1)) {
+                    int i = m - 2;
+                    
+                    while (i >= 0 && pattern.charAt(i) == text.charAt(j + i)) {
+                        --i;
+                    }
+                    
+                    if (i == -1) {
+                        return j;
+                    }
                 }
                 
-                if (!d.and(f).equals(BigInteger.ZERO)) {
-                    return j - m + 1;
-                }
+                char tmp = text.charAt(j + m - 1);
+                j += shiftMap.getOrDefault(tmp, m);
             }
             
             return NOT_FOUND_INDEX;
